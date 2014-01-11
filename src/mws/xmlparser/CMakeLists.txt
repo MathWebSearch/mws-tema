@@ -28,6 +28,7 @@ SET(MODULE "mwsxmlparser")
 
 # Dependencies
 FIND_PACKAGE (LibXml2 REQUIRED)
+FIND_LIBRARY (LIBJSONC json-c REQUIRED)
 
 # Includes
 INCLUDE_DIRECTORIES( "${LIBXML2_INCLUDE_DIR}" )
@@ -39,7 +40,11 @@ FILE( GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp" "*.hpp")
 
 # Binaries
 ADD_LIBRARY( ${MODULE} ${SOURCES})
+message(${LIBJSONC})
+
 TARGET_LINK_LIBRARIES(${MODULE}
                       mwsindex
                       commonutils
+                      crawlerparser
+                      ${LIBJSONC}
                       ${LIBXML2_LIBRARIES})

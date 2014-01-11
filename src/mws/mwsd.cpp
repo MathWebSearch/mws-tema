@@ -51,6 +51,7 @@ int main(int argc, char* argv[]) {
 
     // Parsing the flags
     FlagParser::addFlag('I', "include-harvest-path", FLAG_REQ, ARG_REQ);
+    FlagParser::addFlag('O', "elastic-search-outdir",FLAG_REQ, ARG_REQ);
     FlagParser::addFlag('m', "mws-port",             FLAG_OPT, ARG_REQ);
     FlagParser::addFlag('D', "data-path",            FLAG_OPT, ARG_REQ);
     FlagParser::addFlag('i', "pid-file",             FLAG_OPT, ARG_REQ);
@@ -68,6 +69,8 @@ int main(int argc, char* argv[]) {
 
     // harvest paths
     config.harvestLoadPaths = FlagParser::getArgs('I');
+    // elastic search out dir
+    config.outDir = FlagParser::getArg('O');
 
     // recursive
     if (FlagParser::hasArg('r')) {

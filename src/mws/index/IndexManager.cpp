@@ -26,6 +26,7 @@ along with MathWebSearch.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <set>
 
+#include "mws/types/GenericTypes.hpp"
 #include "IndexManager.hpp"
 
 using namespace std;
@@ -72,6 +73,11 @@ IndexManager::indexContentMath(const types::CmmlToken* cmmlToken,
                                        currentSubterm->getXpath());
             leaf->solutions++;
             numSubExpressions++;
+
+            FormulaDocId docId;
+            docId.xmlId = crawlData.expressionUri;
+            docId.xpath = currentSubterm->getXpath();
+            (*mloggedFormulae)[formulaId].push_back(docId);
         }
     }
 

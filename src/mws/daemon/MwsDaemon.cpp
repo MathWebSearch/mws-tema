@@ -227,6 +227,7 @@ int initMws(const Config& config)
     }
 
     // load harvests
+    AbsPath elasticSearchOutputPath(config.outDir);
     const vector<string>& paths = config.harvestLoadPaths;
     vector<string> :: const_iterator it;
     for (it = paths.begin(); it != paths.end(); it++)
@@ -235,6 +236,7 @@ int initMws(const Config& config)
         printf("Loading from %s...\n", it->c_str());
         printf("%d expressions loaded.\n",
                 loadMwsHarvestFromDirectory(indexManager, harvestPath,
+                                            elasticSearchOutputPath,
                                             config.recursive));
         fflush(stdout);
     }

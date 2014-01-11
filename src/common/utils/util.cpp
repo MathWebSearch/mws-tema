@@ -59,5 +59,17 @@ getFileContents(const std::string& path) {
     return contents;
 }
 
+void putFileContents(const std::string& path, const std::string& contents) {
+    try {
+        ofstream out(path, std::ios::out | std::ios::binary);
+        if (out.good()) {
+            out.write(contents.data(), contents.size());
+            out.close();
+        }
+    } catch (...) {
+        throw std::runtime_error(strerror(errno));
+    }
+}
+
 } }
 

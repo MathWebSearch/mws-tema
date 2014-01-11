@@ -45,6 +45,7 @@ struct Config {
     bool                     recursive;
     uint16_t                 mwsPort;
     std::string              dataPath;
+    std::string              outDir;
     bool                     useLevelDb;
 };
 

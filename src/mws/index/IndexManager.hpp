@@ -27,14 +27,20 @@ along with MathWebSearch.  If not, see <http://www.gnu.org/licenses/>.
   * @date 18 Nov 2013
   */
 
+#include <map>
+#include <vector>
+
 #include "mws/types/CmmlToken.hpp"
 #include "mws/dbc/FormulaDb.hpp"
 #include "mws/dbc/CrawlDb.hpp"
 #include "mws/index/MwsIndexNode.hpp"
+#include "mws/types/GenericTypes.hpp"
 
 namespace mws { namespace index {
 
 class IndexManager {
+public:
+    std::map<FormulaId, std::vector<FormulaDocId> >* mloggedFormulae;
 private:
     dbc::FormulaDb* m_formulaDb;
     dbc::CrawlDb* m_crawlDb;

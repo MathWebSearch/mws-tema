@@ -34,11 +34,14 @@ along with MathWebSearch.  If not, see <http://www.gnu.org/licenses/>.
 
 // System includes
 
+#include <vector>
+#include <map>
 #include <utility>
 
 // Local includes
 
 #include "mws/index/IndexManager.hpp"
+#include "mws/types/GenericTypes.hpp"
 #include "common/utils/Path.hpp"
 
 namespace mws
@@ -57,6 +60,7 @@ loadMwsHarvestFromFd(mws::index::IndexManager* indexManager, int fd);
 
 int loadMwsHarvestFromDirectory(mws::index::IndexManager* indexManager,
                                 const mws::AbsPath& dirPath,
+                                const AbsPath &elasticSearchOutputPath,
                                 bool recursive);
 
 

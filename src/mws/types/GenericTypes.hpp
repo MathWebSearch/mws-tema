@@ -28,6 +28,7 @@ along with MathWebSearch.  If not, see <http://www.gnu.org/licenses/>.
   * @date 24 Jun 2011
   */
 
+#include <string>
 
 namespace mws
 {
@@ -41,6 +42,12 @@ enum BoolType
     BOOL_YES,
     BOOL_NO,
 };
+
+struct FormulaDocId {
+    std::string xmlId;
+    std::string xpath;
+};
+
 
 }
 

@@ -74,8 +74,9 @@ int main() {
 
     /* ensure the file does not exist */
     FAIL_ON(unlink(ms_path) != 0 && errno != ENOENT);
-  
+
     FAIL_ON(loadMwsHarvestFromDirectory(indexManager, AbsPath(harvest_path),
+                                        AbsPath("."),
                                         /* recursive = */ false) <= 0);
 
     FAIL_ON(memsector_create(&mswr, ms_path, TMPFILE_SIZE) != 0);

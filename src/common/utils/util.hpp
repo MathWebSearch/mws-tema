@@ -35,6 +35,9 @@ namespace common { namespace utils {
 std::string
 getFileContents(const std::string& path);
 
+void
+putFileContents(const std::string& path, const std::string& contents);
+
 } }
 
 #endif // _COMMON_UTILS_UTIL_HPP
