@@ -58,6 +58,7 @@ int main(int argc, char* argv[]) {
     FlagParser::addFlag('l', "log-file",             FLAG_OPT, ARG_REQ);
     FlagParser::addFlag('r', "recursive",            FLAG_OPT, ARG_NONE);
     FlagParser::addFlag('L', "leveldb",              FLAG_OPT, ARG_NONE);
+    FlagParser::addFlag('E', "exit-after-load",      FLAG_OPT, ARG_NONE);
 #ifndef __APPLE__
     FlagParser::addFlag('d', "daemonize",            FLAG_OPT, ARG_NONE);
 #endif  // !__APPLE__
@@ -71,6 +72,9 @@ int main(int argc, char* argv[]) {
     config.harvestLoadPaths = FlagParser::getArgs('I');
     // elastic search out dir
     config.outDir = FlagParser::getArg('O');
+
+    // exit after load
+    config.exitAfterLoad = FlagParser::hasArg('E');
 
     // recursive
     if (FlagParser::hasArg('r')) {

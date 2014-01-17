@@ -275,10 +275,11 @@ int mwsDaemonLoop(const Config& config)
 
     atexit(cleanupMws);
 
-    while (run)
-    {
-        acceptedSock = serverSocket->accept();
-        ThreadWrapper::run(HandleConnection, acceptedSock);
+    if (!config.exitAfterLoad) {
+        while (run) {
+            acceptedSock = serverSocket->accept();
+            ThreadWrapper::run(HandleConnection, acceptedSock);
+        }
     }
  
     return EXIT_SUCCESS;

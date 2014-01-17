@@ -47,6 +47,7 @@ struct Config {
     std::string              dataPath;
     std::string              outDir;
     bool                     useLevelDb;
+    bool                     exitAfterLoad;
 };
 
 int mwsDaemonLoop(const Config& config);

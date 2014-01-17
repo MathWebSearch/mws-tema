@@ -4,7 +4,7 @@ if [ "$#" -ne 1 ]; then
     cat << EOF
 Usage: $0 <json_dir>
 
-This script loads data intro elastic search.
+This script loads data into elastic search.
 
 EOF
     exit 1
