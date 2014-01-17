@@ -188,9 +188,12 @@ loadMwsHarvestFromDirectory(mws::index::IndexManager* indexManager,
         unlink(harvest_path_templ);
 
         // Output json harvest for elastic search
-        AbsPath elasticSearchFullPath = elasticSearchOutputPath;
-        elasticSearchFullPath.append(*it + ".json");
-        writeElasticSearchHarvest(doc, loggedFormulae, elasticSearchFullPath);
+        if (strlen(elasticSearchOutputPath.get()) > 0) {
+            AbsPath elasticSearchFullPath = elasticSearchOutputPath;
+            elasticSearchFullPath.append(*it + ".json");
+            writeElasticSearchHarvest(doc, loggedFormulae,
+                                      elasticSearchFullPath);
+        }
 
         printf("Total %d\n", totalLoaded);
     }
