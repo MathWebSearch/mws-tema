@@ -51,31 +51,17 @@ writeJsonAnswsetToFd(mws::MwsAnswset* answset, int fd)
     size_t                     data_size;
     size_t                     bytes_written;
     string                     out;
-    unsigned int               i;
-
 
     ss << "{\"size\":" << answset->answers.size()
        << ",\"total\":" << answset->total
        << ",\"data\":[";
     for (auto it = answset->answers.begin();
          it != answset->answers.end(); it ++) {
-        if (it != answset->answers.begin())
-        {
-            ss << ",";
+        if (it != answset->answers.begin()) {
+            ss << ", ";
         }
 
-        ss << "{\"uri\":\"" << (*it)->uri
-           << "\",\"xpath\":\"" << (*it)->xpath
-           << "\",\"qvars\":{";
-        for (i = 0; i < answset->qvarNames.size(); i++)
-        {
-            if (i != 0) {
-                ss << ",";
-            }
-            ss << "\"" << answset->qvarNames[i] << "\":\""
-               << (*it)->xpath << answset->qvarXpaths[i] << "\"";
-        }
-        ss << "}}";
+        ss << to_string((*it)->formulaId);
     }
     ss << "]}";
 

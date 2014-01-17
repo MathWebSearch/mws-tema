@@ -56,7 +56,6 @@ along with MathWebSearch.  If not, see <http://www.gnu.org/licenses/>.
 #include "mws/dbc/MemCrawlDb.hpp"
 #include "mws/xmlparser/loadMwsHarvestFromFd.hpp"
 #include "mws/xmlparser/readMwsQueryFromFd.hpp"
-#include "mws/xmlparser/writeXmlAnswsetToFd.hpp"
 #include "mws/xmlparser/initxmlparser.hpp"
 #include "mws/xmlparser/clearxmlparser.hpp"
 #include "mws/xmlparser/writeJsonAnswsetToFd.hpp"
@@ -149,17 +148,13 @@ HandleConnection(void* dataPtr)
         // Sending the answer with the proper format
         switch (mwsQuery->attrResultOutputFormat)
         {
-            case DATAFORMAT_XML:
-                ret = writeXmlAnswsetToFd(result,
-                                          outSocket->getFd());
-                break;
             case DATAFORMAT_JSON:
                 ret = writeJsonAnswsetToFd(result,
                                            outSocket->getFd());
                 break;
             default:
-                ret = writeXmlAnswsetToFd(result,
-                                          outSocket->getFd());
+                ret = writeJsonAnswsetToFd(result,
+                                           outSocket->getFd());
                 break;
         }
 

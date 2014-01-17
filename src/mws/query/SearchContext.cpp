@@ -34,6 +34,8 @@ along with MathWebSearch.  If not, see <http://www.gnu.org/licenses/>.
 // Local includes
 
 #include "SearchContext.hpp"
+#include "common/utils/macro_func.h"
+
 
 // Namespaces
 
@@ -152,6 +154,8 @@ SearchContext::getResult(MwsIndexNode* data,
     int           lastSolvedQvar;
     bool          backtrack;
 
+    UNUSED(dbQueryManger);
+
     // Initializing variables
     result             = new MwsAnswset();
     result->qvarNames  = qvarNames;
@@ -242,33 +246,13 @@ SearchContext::getResult(MwsIndexNode* data,
         {
             // Handling the solutions
             if (found < size + offset &&
-                found + currentNode->solutions > offset)
-            {
-                unsigned dbOffset;
-                unsigned dbMaxSize;
-                if (offset < found) {
-                    dbOffset = 0;
-                    dbMaxSize = size + offset - found;
-                } else {
-                    dbOffset = offset - found;
-                    dbMaxSize = size;
-                }
-                dbc::DbAnswerCallback callback =
-                        [result](const FormulaPath& formulaPath,
-                                 const types::CrawlData& crawlData) {
-                    mws::types::Answer* answer = new mws::types::Answer();
-                    answer->data = crawlData.data;
-                    answer->uri = crawlData.expressionUri;
-                    answer->xpath = formulaPath;
-                    result->answers.push_back(answer);
-                    return 0;
-                };
-
-                dbQueryManger->query((FormulaId)currentNode->id, dbOffset,
-                                     dbMaxSize, callback);
+                found + 1 > offset) {
+                mws::types::Answer* answer = new mws::types::Answer();
+                answer->formulaId = (FormulaId)currentNode->id;
+                result->answers.push_back(answer);
             }
 
-            found += currentNode->solutions;
+            found++;
 
             // making sure we haven't surpassed maxTotal
             if (found > maxTotal) found = maxTotal;

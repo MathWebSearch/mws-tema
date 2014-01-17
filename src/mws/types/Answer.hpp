@@ -33,6 +33,7 @@ along with MathWebSearch.  If not, see <http://www.gnu.org/licenses/>.
   */
 
 #include <string>
+#include "mws/types/NodeInfo.hpp"
 
 namespace mws {
 namespace types {
@@ -41,9 +42,7 @@ namespace types {
   * @brief <mws:answ> Answer
   */
 struct Answer {
-    std::string uri;
-    std::string xpath;
-    std::string data;
+    FormulaId formulaId;
 };
 
 }  // namespace types
