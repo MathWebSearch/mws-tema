@@ -28,7 +28,8 @@ SET(MODULE "mwsxmlparser")
 
 # Dependencies
 FIND_PACKAGE (LibXml2 REQUIRED)
-FIND_LIBRARY (LIBJSONC json-c REQUIRED)
+FIND_PACKAGE (PkgConfig REQUIRED)
+PKG_CHECK_MODULES (JSON json)
 
 # Includes
 INCLUDE_DIRECTORIES( "${LIBXML2_INCLUDE_DIR}" )
@@ -45,5 +46,5 @@ TARGET_LINK_LIBRARIES(${MODULE}
                       mwsindex
                       commonutils
                       crawlerparser
-                      ${LIBJSONC}
+                      ${JSON_LIBRARIES}
                       ${LIBXML2_LIBRARIES})
