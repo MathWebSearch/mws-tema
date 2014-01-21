@@ -40,7 +40,6 @@ FILE( GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp" "*.hpp")
 
 # Binaries
 ADD_LIBRARY( ${MODULE} ${SOURCES})
-message(${LIBJSONC})
 
 TARGET_LINK_LIBRARIES(${MODULE}
                       mwsindex

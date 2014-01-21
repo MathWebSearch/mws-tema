@@ -65,12 +65,12 @@ SET(CMAKE_MODULE_PATH
     "${THIRD_PARTY_DIR}/cmake-modules")
 
 #       Options                 Description                             Default
-OPTION( BUILD_SHARED_LIBS       "static/dynamic executables"            ON )
+OPTION( BUILD_SHARED_LIBS       "static/dynamic executables"            OFF )
 OPTION( WITH_MWS                "build MathWebSearch daemon"            ON )
 OPTION( WITH_REST               "build MWS RESTful interface daemon"    ON )
-OPTION( WITH_CRAWLER            "build MWS crawlers"                    OFF )
+OPTION( WITH_CRAWLER            "build MWS crawlers"                    ON )
 OPTION( WITH_DOC                "build MWS documentation"               OFF )
-OPTION( WITH_TEST               "build test suites"                     ON )
+OPTION( WITH_TEST               "build test suites"                     OFF )
 OPTION( CMAKE_BUILD_TYPE "Choose one of Debug|Release|RelWithDebInfo|MinSizeRel"
                                                                     Debug)
 # Debug flags

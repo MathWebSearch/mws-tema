@@ -236,15 +236,17 @@ int initMws(const Config& config)
         fflush(stdout);
     }
 
-    // Starting the network side and accepting connections
-    serverSocket = new InSocket(config.mwsPort);
-    // TODO check return
-    serverSocket->enable();
+    if (!config.exitAfterLoad) {
+        // Starting the network side and accepting connections
+        serverSocket = new InSocket(config.mwsPort);
+        // TODO check return
+        serverSocket->enable();
 
-    // Registering the signal handler
-    signal(SIGTERM, graceful_exit);
-    signal(SIGINT, graceful_exit);
-    signal(SIGPIPE, SIG_IGN);
+        // Registering the signal handler
+        signal(SIGTERM, graceful_exit);
+        signal(SIGINT, graceful_exit);
+        signal(SIGPIPE, SIG_IGN);
+    }
 
     return ret;
 }
