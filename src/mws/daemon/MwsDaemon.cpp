@@ -142,7 +142,7 @@ HandleConnection(void* dataPtr)
         delete ctxt;
 
         // Sending the control sequence
-        controlSequence.setFormat(mwsQuery->attrResultOutputFormat);
+        controlSequence.setFormat(DATAFORMAT_JSON);
         controlSequence.send(outSocket->getFd());
 
         // Sending the answer with the proper format
