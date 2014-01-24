@@ -18,39 +18,39 @@ You should have received a copy of the GNU General Public License
 along with MathWebSearch.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-#ifndef _MWSDAEMON_HPP
-#define _MWSDAEMON_HPP
 
 /**
-  * @brief File containing the header of the MwsDaemon class.
-  * @file MwsDaemon.hpp
-  * @author Corneliu-Claudiu Prodescu
-  * @date 18 Jun 2011
-  *
-  * License: GPL v3
-  *
+  * @file CrawlDb.cpp
+  * @brief Crawl Data Memory Database implementation
+  * @date 12 Nov 2013
   */
 
-#include <string>
-#include <vector>
-#include <inttypes.h>
+#include <map>
+#include <stdexcept>
+#include "common/utils/ToString.hpp"
+#include "common/utils/macro_func.h"
+
+#include "NullCrawlDb.hpp"
+
+using namespace std;
+
+namespace mws { namespace dbc {
+
+NullCrawlDb::NullCrawlDb() {
+}
+
+mws::CrawlId
+NullCrawlDb::putData(const mws::types::CrawlData& crawlData)
+throw (std::exception) {
+    UNUSED(crawlData);
+    return (mws::CrawlId) 0;
+}
+
+const types::CrawlData NullCrawlDb::getData(const mws::CrawlId& crawlId)
+throw (std::exception) {
+    UNUSED(crawlId);
+    throw runtime_error("NullCrawlDb does not support getData()");
+}
 
 
-// TODO Doc and clean up implementation
-
-namespace mws { namespace daemon {
-
-struct Config {
-    std::vector<std::string> harvestLoadPaths;
-    bool                     recursive;
-    uint16_t                 mwsPort;
-    std::string              dataPath;
-    std::string              outDir;
-    bool                     exitAfterLoad;
-};
-
-int mwsDaemonLoop(const Config& config);
-
-}}
-
-#endif // _MWSDAEMON_HPP
+} }

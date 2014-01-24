@@ -50,10 +50,8 @@ along with MathWebSearch.  If not, see <http://www.gnu.org/licenses/>.
 #include "MwsDaemon.hpp"
 #include "common/socket/InSocket.hpp"
 #include "common/socket/OutSocket.hpp"
-#include "mws/dbc/LevFormulaDb.hpp"
-#include "mws/dbc/LevCrawlDb.hpp"
-#include "mws/dbc/MemFormulaDb.hpp"
-#include "mws/dbc/MemCrawlDb.hpp"
+#include "mws/dbc/NullCrawlDb.hpp"
+#include "mws/dbc/NullFormulaDb.hpp"
 #include "mws/xmlparser/loadMwsHarvestFromFd.hpp"
 #include "mws/xmlparser/readMwsQueryFromFd.hpp"
 #include "mws/xmlparser/initxmlparser.hpp"
@@ -189,23 +187,8 @@ int initMws(const Config& config)
         return 1;
     }
 
-    if (config.useLevelDb) {
-        dbc::LevCrawlDb* crdb = new dbc::LevCrawlDb();
-        if (crdb->create_new("crawl1.db") == -1)
-            crdb->open("crawl1.db");
-        crawlDb = crdb;
-    } else {
-        crawlDb = new dbc::MemCrawlDb();
-    }
-
-    if (config.useLevelDb) {
-        dbc::LevFormulaDb* fmdb = new dbc::LevFormulaDb();
-        if (fmdb->create_new("formula1.db") == -1)
-            fmdb->open("formula1.db");
-        formulaDb = fmdb;
-    } else {
-        formulaDb = new dbc::MemFormulaDb();
-    }
+    crawlDb = new dbc::NullCrawlDb();
+    formulaDb = new dbc::NullFormulaDb();
 
     data = new MwsIndexNode();
     meaningDictionary = new MeaningDictionary();
