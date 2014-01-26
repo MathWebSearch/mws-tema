@@ -39,6 +39,7 @@ DAEMON="@MWS_BIN_PATH@/mwsd"
 DAEMON_ARGS="
     -d \
     -I @MWS_HARVEST_PATH@ \
+    --recursive \
     -D @MWS_DATA_PATH@ \
     --pid-file $PIDFILE \
     --log-file /var/log/$NAME.log \
