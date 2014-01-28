@@ -58,10 +58,8 @@ struct SearchContext
     /// Qvar points in the Cmml Dfs Vector from where to backtrack. The
     /// vector starts with -1 to mark the beginning
     std::vector<int> backtrackPoints;
-    /// Qvar names
-    std::vector<std::string> qvarNames;
-    /// Qvar xpaths
-    std::vector<std::string> qvarXpaths;
+    std::vector<Qvar> qvars;
+
 
     // Constructors and Destructors
 

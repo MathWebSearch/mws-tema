@@ -101,8 +101,8 @@ SearchContext::SearchContext(CmmlToken* expression, MeaningDictionary* dict)
                     backtrackPoints.push_back(tokenCount+1);
                     qvarCount++;
                     // Name / xpath book keeping
-                    qvarNames.push_back(currentToken->getTextContent());
-                    qvarXpaths.push_back(currentToken->getXpathRelative());
+                    qvars.push_back(Qvar(currentToken->getTextContent(),
+                                         currentToken->getXpathRelative()));
                 }
                 else
                 {
@@ -158,8 +158,7 @@ SearchContext::getResult(MwsIndexNode* data,
 
     // Initializing variables
     result             = new MwsAnswset();
-    result->qvarNames  = qvarNames;
-    result->qvarXpaths = qvarXpaths;
+    result->qvars      = qvars;
     found              = 0;
     exprSize           = expr.size();
 
