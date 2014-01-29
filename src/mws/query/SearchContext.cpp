@@ -88,6 +88,10 @@ SearchContext::SearchContext(CmmlToken* expression, MeaningDictionary* dict)
             }
             else
             {
+                // Name / xpath book keeping
+                qvars.push_back(Qvar(currentToken->getTextContent(),
+                                     currentToken->getXpathRelative()));
+
                 mapIt = indexedQvars.find(currentToken->getQvarName());
                 if (mapIt == indexedQvars.end())
                 {
@@ -100,9 +104,6 @@ SearchContext::SearchContext(CmmlToken* expression, MeaningDictionary* dict)
                             );
                     backtrackPoints.push_back(tokenCount+1);
                     qvarCount++;
-                    // Name / xpath book keeping
-                    qvars.push_back(Qvar(currentToken->getTextContent(),
-                                         currentToken->getXpathRelative()));
                 }
                 else
                 {
