@@ -31,21 +31,24 @@ along with MathWebSearch.  If not, see <http://www.gnu.org/licenses/>.
 
 // System includes
 
-#include <stdio.h>
 #include <dirent.h>
+#include <libgen.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+
 #include <algorithm>
 #include <utility>
 #include <map>
 #include <iostream>
 
-#include "json/json.h"
+#include <json/json.h>
 
 #include "mws/index/IndexManager.hpp"
 #include "common/utils/Path.hpp"
+#include "common/utils/macro_func.h"
 #include "loadMwsHarvestFromFd.hpp"
 
 #include "common/utils/util.hpp"
@@ -62,6 +65,11 @@ namespace mws {
 static void writeElasticSearchHarvest(const string& xhtml,
                                       const map<FormulaId, vector<FormulaDocId> >& id_mappings,
                                       const AbsPath& elasticSearchOutputPath);
+static void processXhtmlFile(const std::string& path,
+                             const std::string& prefix,
+                             index::IndexManager* indexManager,
+                             const std::string& elasticSearchOutput,
+                             int* totalLoaded);
 
 int
 loadMwsHarvestFromDirectory(mws::index::IndexManager* indexManager,
@@ -69,88 +77,59 @@ loadMwsHarvestFromDirectory(mws::index::IndexManager* indexManager,
                             mws::AbsPath const& elasticSearchOutputPath,
                             bool recursive)
 {
-    DIR*           directory;
-    struct dirent* currEntry;
-    struct dirent  tmpEntry;
-    int            ret;
-    size_t         extenSize;
-    int            fd;
-    int            totalLoaded;
-    pair<int,int>  loadReturn;
-    vector<string> files;
-    vector<string> subdirs;
-    AbsPath        fullPath;
-    vector<string> :: iterator it;
-
-    totalLoaded = 0;
-
-    extenSize = strlen(MWS_HARVEST_SUFFIX);
-
-    directory = opendir(dirPath.get());
-    if (!directory)
-    {
-        perror("loadMwsHarvestFromDirectory");
-        return -1;
-    }
-
-    while ((ret = readdir_r(directory, &tmpEntry, &currEntry)) == 0 &&
-            currEntry != NULL)
-    {
-        size_t entrySize = strlen(currEntry->d_name);
-
-        if (currEntry->d_name[0] == '.') {
-            printf("Skipping hidden entry \"%s\"\n", currEntry->d_name);
-        } else {
-            switch (currEntry->d_type) {
-            case DT_DIR:
-                if (recursive) {
-                    subdirs.push_back(currEntry->d_name);
-                } else {
-                    printf("Skipping directory \"%s\"\n", currEntry->d_name);
-                }
-                break;
-            case DT_REG:
-                if (strcmp(currEntry->d_name + entrySize - extenSize,
-                             MWS_HARVEST_SUFFIX) == 0) {
-                    files.push_back(currEntry->d_name);
-                } else {
-                    printf("Skipping bad extension file \"%s\"\n",
-                           currEntry->d_name);
-                }
-                break;
-            default:
-                printf("Skiping entry \"%s\": not a regular file\n",
-                       currEntry->d_name);
-                break;
-            }
+    int totalLoaded = 0;
+    common::utils::FileCallback fileCallback =
+            [&totalLoaded, indexManager, elasticSearchOutputPath]
+            (const std::string& path, const string& partialDirectoryPath) {
+        processXhtmlFile(path, partialDirectoryPath, indexManager,
+                         elasticSearchOutputPath.get(), &totalLoaded);
+        return 0;
+    };
+    common::utils::DirectoryCallback shouldRecurse =
+            [elasticSearchOutputPath](const std::string partialPath) {
+        string dirToCreate =
+                (string) elasticSearchOutputPath.get() + "/" + partialPath;
+        if (mkdir(dirToCreate.c_str(), 0755) != 0 && errno != EEXIST) {
+            fprintf(stderr, "Error while creating \"%s\": %s\n",
+                    dirToCreate.c_str(), strerror(errno));
+            return false;
         }
-    }
-    if (ret != 0)
-    {
-        perror("readdir:");
-    }
-
-    // Closing the directory
-    closedir(directory);
-
-    // Sorting the entries
-    sort(files.begin(), files.end());
+        return true;
+    };
 
     printf("Loading harvest files...\n");
+    if (recursive) {
+        FAIL_ON(common::utils::foreachEntryInDirectory(dirPath.get(),
+                                                       fileCallback,
+                                                       shouldRecurse));
+    } else {
+        FAIL_ON(common::utils::foreachEntryInDirectory(dirPath.get(),
+                                                       fileCallback));
+    }
+    printf("Total %d\n", totalLoaded);
 
-    // Loading the harvests from the respective entries
-    for (it = files.begin(); it != files.end(); it++)
-    {
-        fullPath.set(dirPath.get());
-        fullPath.append(*it);
+    return totalLoaded;
 
-        printf("Processing %s ...\n", fullPath.get());
+fail:
+    printf("Total %d (errors encountered)\n", totalLoaded);
+    return totalLoaded;
+}
+
+static void processXhtmlFile(const std::string& path,
+                             const std::string& prefix,
+                             index::IndexManager* indexManager,
+                             const std::string& elasticSearchOutput,
+                             int* totalLoaded) {
+    if (common::utils::hasSuffix(path, ".xhtml")) {
+        int fd;
+        printf("Processing %s ...\n", path.c_str());
         fflush(stdout);
         // Load contents and generate harvest;
         char harvest_path_templ[] = "./tmp_XXXXX";
         mkstemp(harvest_path_templ);
-        string doc = common::utils::getFileContents(fullPath.get());
-        vector<string> mathElements = crawler::parser::getHarvestFromXhtml(doc, fullPath.get());
+        string doc = common::utils::getFileContents(path.c_str());
+        vector<string> mathElements =
+                crawler::parser::getHarvestFromXhtml(doc, path);
 
         FILE* harvest = fopen(harvest_path_templ, "w");
         fputs("<?xml version=\"1.0\" ?>\n"
@@ -167,52 +146,38 @@ loadMwsHarvestFromDirectory(mws::index::IndexManager* indexManager,
         printf("Loading harvest %s ...\n", harvest_path_templ);
         fd = open(harvest_path_templ, O_RDONLY);
         if (fd < 0) {
-            fprintf(stderr, "Error while opening \"%s\"\n", fullPath.get());
-            continue;
+            fprintf(stderr, "Error while opening \"%s\"\n", path.c_str());
+            return;
         }
         map<FormulaId, vector<FormulaDocId> > loggedFormulae;
         indexManager->mloggedFormulae = &loggedFormulae;
-        loadReturn = loadMwsHarvestFromFd(indexManager, fd);
-        if (loadReturn.first == 0)
-        {
+        auto loadReturn = loadMwsHarvestFromFd(indexManager, fd);
+        if (loadReturn.first == 0) {
             printf("%d loaded\n", loadReturn.second);
-        }
-        else
-        {
+        } else {
             printf("%d loaded (with errors)\n", loadReturn.second);
         }
 
-        totalLoaded += loadReturn.second;
+        *totalLoaded += loadReturn.second;
 
         close(fd);
         unlink(harvest_path_templ);
 
         // Output json harvest for elastic search
-        if (strlen(elasticSearchOutputPath.get()) > 0) {
-            AbsPath elasticSearchFullPath = elasticSearchOutputPath;
-            elasticSearchFullPath.append(*it + ".json");
+        if (elasticSearchOutput.size() > 0) {
+            AbsPath elasticSearchFullPath = elasticSearchOutput;
+            elasticSearchFullPath.append(prefix);
+            char* pathCopy = strdup(path.c_str());
+            char* filename = basename(pathCopy);
+            elasticSearchFullPath.append((string)filename + ".json");
+            free(pathCopy);
             writeElasticSearchHarvest(doc, loggedFormulae,
                                       elasticSearchFullPath);
         }
-
-        printf("Total %d\n", totalLoaded);
     }
-
-    // Recursing through directories
-    if (recursive) {
-        for (it = subdirs.begin(); it != subdirs.end(); it++) {
-            fullPath.set(dirPath.get());
-            fullPath.append(*it);
-            totalLoaded += loadMwsHarvestFromDirectory(indexManager, fullPath,
-                                                       elasticSearchOutputPath,
-                                                       /* recursive = */ true);
-        }
+    else {
+        printf("Skipping bad extension file \"%s\"\n", path.c_str());
     }
-
-    return totalLoaded;
-
-//failure:
-//    return -1;
 }
 
 static void writeElasticSearchHarvest(const string& xhtml,
