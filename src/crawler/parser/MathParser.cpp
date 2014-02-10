@@ -76,13 +76,11 @@ vector<std::string> getHarvestFromXhtml(const string& xhtml,
                 const xmlChar *id = xmlGetProp(mathNode, BAD_CAST "id");
 
                 fprintf(stream, "<mws:expr url=\"%s#%s\">\n", url.c_str() , id);
-                sanitizeMathML(doc, mathNode);
-                fprintf(stream, "<data>\n");
-                xmlElemDump(stream, doc, mathNode);
-                fprintf(stream, "\n</data>\n");
+                fprintf(stream, "<data/>\n");
 
                 // Remove redundant attributes (local_id, xref)
                 cleanContentMath(contentMathNode);
+                sanitizeMathML(doc, contentMathNode);
                 fprintf(stream, "<content>\n");
                 xmlElemDump(stream, doc, contentMathNode);
                 fprintf(stream, "\n</content>\n");

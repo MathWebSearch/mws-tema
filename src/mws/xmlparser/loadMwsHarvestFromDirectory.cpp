@@ -123,7 +123,6 @@ static void processXhtmlFile(const std::string& path,
     if (common::utils::hasSuffix(path, ".xhtml")) {
         int fd;
         printf("Processing %s ...\n", path.c_str());
-        fflush(stdout);
         // Load contents and generate harvest;
         char harvest_path_templ[] = "./tmp_XXXXX";
         mkstemp(harvest_path_templ);
