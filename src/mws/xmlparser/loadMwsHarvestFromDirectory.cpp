@@ -49,12 +49,11 @@ along with MathWebSearch.  If not, see <http://www.gnu.org/licenses/>.
 #include "mws/index/IndexManager.hpp"
 #include "common/utils/Path.hpp"
 #include "common/utils/macro_func.h"
-#include "loadMwsHarvestFromFd.hpp"
-
+#include "common/utils/memstream.h"
 #include "common/utils/util.hpp"
 #include "crawler/parser/MathParser.hpp"
 
-#include "config.h"
+#include "loadMwsHarvestFromFd.hpp"
 
 // Namespaces
 
@@ -121,46 +120,38 @@ static void processXhtmlFile(const std::string& path,
                              const std::string& elasticSearchOutput,
                              int* totalLoaded) {
     if (common::utils::hasSuffix(path, ".xhtml")) {
-        int fd;
         printf("Processing %s ...\n", path.c_str());
-        // Load contents and generate harvest;
-        char harvest_path_templ[] = "./tmp_XXXXX";
-        mkstemp(harvest_path_templ);
+        // Load contents and generate harvest
         string doc = common::utils::getFileContents(path.c_str());
         vector<string> mathElements =
                 crawler::parser::getHarvestFromXhtml(doc, path);
 
-        FILE* harvest = fopen(harvest_path_templ, "w");
+        char* buffer;
+        size_t buffer_size;
+
+        FILE* harvestOut = open_memstream(&buffer, &buffer_size);
         fputs("<?xml version=\"1.0\" ?>\n"
               "<mws:harvest xmlns:m=\"http://www.w3.org/1998/Math/MathML\"\n"
               "             xmlns:mws=\"http://search.mathweb.org/ns\">\n",
-              harvest);
+              harvestOut);
         for (const string& mathElement : mathElements) {
-            fputs(mathElement.c_str(), harvest);
+            fputs(mathElement.c_str(), harvestOut);
         }
-        fputs("</mws:harvest>\n", harvest);
-        fclose(harvest);
+        fputs("</mws:harvest>\n", harvestOut);
+        fclose(harvestOut);
 
-        printf("Created harvest %s\n", harvest_path_templ);
-        printf("Loading harvest %s ...\n", harvest_path_templ);
-        fd = open(harvest_path_templ, O_RDONLY);
-        if (fd < 0) {
-            fprintf(stderr, "Error while opening \"%s\"\n", path.c_str());
-            return;
-        }
+        FILE* harvestIn = fmemopen(buffer, buffer_size, "r");
         map<FormulaId, vector<FormulaDocId> > loggedFormulae;
         indexManager->mloggedFormulae = &loggedFormulae;
-        auto loadReturn = loadMwsHarvestFromFd(indexManager, fd);
+        auto loadReturn = loadMwsHarvestFromFd(indexManager, harvestIn);
         if (loadReturn.first == 0) {
             printf("%d loaded\n", loadReturn.second);
         } else {
             printf("%d loaded (with errors)\n", loadReturn.second);
         }
 
+        free(buffer);
         *totalLoaded += loadReturn.second;
-
-        close(fd);
-        unlink(harvest_path_templ);
 
         // Output json harvest for elastic search
         if (elasticSearchOutput.size() > 0) {

@@ -60,7 +60,8 @@ using namespace mws;
 
 int main()
 {
-    int           fd, ret;
+    FILE* fp;
+    int ret;
     const char* xmlfile[] = 
     {
         "harvests1303818928.xml",
@@ -84,7 +85,6 @@ int main()
         0,
     };
     string      xml_path;
-    string dbenv_path = TMPDBENV_PATH;
 
     dbc::CrawlDb* crawlDb = new dbc::MemCrawlDb();
     dbc::FormulaDb* formulaDb = new dbc::MemFormulaDb();
@@ -103,13 +103,13 @@ int main()
         xml_path = (string) MWS_TESTDATA_PATH +
                     "/" + (string) xmlfile[i];
         
-        FAIL_ON((fd = open(xml_path.c_str(), O_RDONLY)) < 0);
+        FAIL_ON((fp = fopen(xml_path.c_str(), "r")) < 0);
 
-        ret = loadMwsHarvestFromFd(indexManager, fd).second;
+        ret = loadMwsHarvestFromFd(indexManager, fp).second;
         // Asserting if all the expressions have been parsed correctly
         FAIL_ON(ret != nr_exprs[i]);
 
-        (void) close(fd);
+        (void) fclose(fp);
     }
 
     (void) clearxmlparser();

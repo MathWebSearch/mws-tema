@@ -50,6 +50,8 @@ along with MathWebSearch.  If not, see <http://www.gnu.org/licenses/>.
 #include "common/utils/DebugMacros.hpp"// Debug macros
 #include "common/utils/macro_func.h"   // Macro functions
 
+#include "loadMwsHarvestFromFd.hpp"
+
 // Macros
 
 #define MWSHARVEST_MAIN_NAME           "mws:harvest"
@@ -115,23 +117,35 @@ void tearDownCopyToStringWriter(MwsHarvest_SaxUserData* data) {
   *
   */
 static inline int
-fdXmlInputReadCallback(void* fdPtr,
-                       char* buffer,
-                       int   len)
+fileXmlInputReadCallback(void* filePtr,
+                        char* buffer,
+                        int   len)
 {
 #ifdef TRACE_FUNC_CALLS
     LOG_TRACE_IN;
 #endif
 
     int result;
-    result =  read(*(int*)  fdPtr,
-                   (void*)  buffer,
-                   (size_t) len);
+    result = fread((void*) buffer,
+                   sizeof(char),
+                   (size_t) len,
+                   (FILE*) filePtr);
 
 #ifdef TRACE_FUNC_CALLS
     LOG_TRACE_OUT;
 #endif
     return result;
+}
+
+
+/**
+  * @brief Callback function used to be used with an IO context parser
+  *
+  */
+static inline int
+fileXmlInputCloseCallback(void* filePtr)
+{
+    return fclose((FILE*) filePtr);
 }
 
 
@@ -524,7 +538,7 @@ namespace mws
 {
 
 pair<int,int>
-loadMwsHarvestFromFd(mws::index::IndexManager *indexManager, int fd) {
+loadMwsHarvestFromFd(mws::index::IndexManager *indexManager, FILE* fp) {
 #ifdef TRACE_FUNC_CALLS
     LOG_TRACE_IN;
 #endif
@@ -557,9 +571,9 @@ loadMwsHarvestFromFd(mws::index::IndexManager *indexManager, int fd) {
     // Creating the IOParser context
     if ((ctxtPtr = xmlCreateIOParserCtxt(&saxHandler,
                                          &user_data,
-                                         fdXmlInputReadCallback,
-                                         NULL,
-                                         &fd,
+                                         fileXmlInputReadCallback,
+                                         fileXmlInputCloseCallback,
+                                         fp,
                                          XML_CHAR_ENCODING_UTF8))
             == NULL) {
         fprintf(stderr, "Error while creating the ParserContext\n");

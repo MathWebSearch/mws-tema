@@ -50,12 +50,12 @@ namespace mws
 /**
   * @brief Function to load a MwsHarvest in from a file descriptor.
   * @param indexNode is a pointer to the MwsIndexNode where to load.
-  * @param fd is the file descriptor from where to read.
+  * @param fp is the file pointer from where to read.
   * @return a pair with an exit code (0 on success and -1 on failure) and
   * the number of successfully loaded entries.
   */
 std::pair<int, int>
-loadMwsHarvestFromFd(mws::index::IndexManager* indexManager, int fd);
+loadMwsHarvestFromFd(mws::index::IndexManager* indexManager, FILE* fp);
 
 
 int loadMwsHarvestFromDirectory(mws::index::IndexManager* indexManager,
